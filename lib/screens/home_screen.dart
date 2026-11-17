@@ -33,6 +33,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     nomeUsuario = ApiService().nomeUsuarioAtual;
+    pontosTotais = ApiService().pontuacaoTotalAtual;
+    pontosSemana = ApiService().pontuacaoSemanalAtual;
+    pontosHoje = ApiService().pontuacaoDiariaAtual;
+    sequenciaAtual = ApiService().sequenciaAtual;
+    maiorSequencia = ApiService().maiorSequenciaAtual;
+    if (sequenciaAtual > maiorSequencia) {
+      maiorSequencia = sequenciaAtual;
+    }
     _carregarPontuacoes();
   }
 
@@ -265,42 +273,46 @@ class _HomeScreenState extends State<HomeScreen> {
             // Espaçamento
             const SizedBox(height: 24),
 
-            // 2. Cards de Métricas em Row
-            Row(
-              children: [
-                // Card Pontos da Semana
-                Expanded(
-                  child: _buildMetricCard(
-                    icon: Icons.star,
-                    iconColor: const Color(0xFF00E676),
-                    value: '$pontosSemana',
-                    label: 'Pontos Semana',
-                    labelColor: const Color(0xFF00E676),
+            // 2. Cards de Métricas em Row (altura uniforme)
+            // 2. Cards de Métricas em Row (com Altura Igual)
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Card Pontos da Semana
+                  Expanded(
+                    child: _buildMetricCard(
+                      icon: Icons.star,
+                      iconColor: const Color(0xFF00E676),
+                      value: '$pontosSemana',
+                      label: 'Pontos Semana',
+                      labelColor: const Color(0xFF00E676),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Card Sequência Atual
-                Expanded(
-                  child: _buildMetricCard(
-                    icon: Icons.bolt,
-                    iconColor: const Color(0xFFFFD700),
-                    value: '$sequenciaAtual',
-                    label: 'Dias Seguidos',
-                    labelColor: const Color(0xFFFFD700),
+                  const SizedBox(width: 12),
+                  // Card Sequência Atual
+                  Expanded(
+                    child: _buildMetricCard(
+                      icon: Icons.bolt,
+                      iconColor: const Color(0xFFFFD700),
+                      value: '$sequenciaAtual',
+                      label: 'Dias Seguidos',
+                      labelColor: const Color(0xFFFFD700),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                // Card Recorde de Sequência
-                Expanded(
-                  child: _buildMetricCard(
-                    icon: Icons.local_fire_department,
-                    iconColor: const Color(0xFFFF5252),
-                    value: '$maiorSequencia',
-                    label: 'Recorde Dias',
-                    labelColor: const Color(0xFFFF5252),
+                  const SizedBox(width: 12),
+                  // Card Recorde de Sequência
+                  Expanded(
+                    child: _buildMetricCard(
+                      icon: Icons.local_fire_department,
+                      iconColor: const Color(0xFFFF5252),
+                      value: '$maiorSequencia',
+                      label: 'Recorde Dias',
+                      labelColor: const Color(0xFFFF5252),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
             // Espaçamento
@@ -311,8 +323,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF2D3139),
+                color: const Color(0xFF1E232A),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       '$pontosHoje/$metaHoje pts',
                       style: const TextStyle(
-                        color: Color(0xFF00E676),
+                        color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -345,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? (pontosHoje / metaHoje).clamp(0.0, 1.0)
                           : 0,
                       minHeight: 16,
-                      backgroundColor: Colors.grey.shade700,
+                      backgroundColor: const Color(0xFF2D3139),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFF00E676),
                       ),
@@ -368,8 +381,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2D3139),
+                  color: const Color(0xFF1E232A),
                   borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: const Color(0xFF00E676).withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -382,30 +398,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       height: 50,
                       width: 2,
-                      color: Colors.grey.shade600,
+                      color: Colors.white12,
                     ),
                     const SizedBox(width: 16),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hora de',
-                          style: TextStyle(
-                            color: Color(0xFF00E676),
-                            fontSize: 18,
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hora de',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 18,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Treinar',
-                          style: TextStyle(
-                            color: Color(0xFF00E676),
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
+                          Text(
+                            'Treinar',
+                            style: TextStyle(
+                              color: Color(0xFF00E676),
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const Spacer(),
                     const Icon(
                       Icons.arrow_forward_ios,
                       color: Color(0xFF00E676),
@@ -432,13 +449,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D3139),
+        color: const Color(0xFF1E232A),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, size: 44, color: iconColor),
+          SizedBox(
+            height: 44,
+            child: Center(
+              child: Icon(icon, size: 44, color: iconColor),
+            ),
+          ),
           const SizedBox(height: 8),
           Column(
             children: [
@@ -451,10 +474,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: labelColor),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: labelColor),
+                ),
               ),
             ],
           ),

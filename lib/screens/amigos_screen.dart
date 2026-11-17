@@ -53,6 +53,16 @@ class _AmigosScreenState extends State<AmigosScreen>
     super.dispose();
   }
 
+  List<Map<String, dynamic>> _ordenarPorNome(List<Map<String, dynamic>> lista) {
+    final copia = List<Map<String, dynamic>>.from(lista);
+    copia.sort((a, b) {
+      final nomeA = (a['nome']?.toString() ?? '').trim().toLowerCase();
+      final nomeB = (b['nome']?.toString() ?? '').trim().toLowerCase();
+      return nomeA.compareTo(nomeB);
+    });
+    return copia;
+  }
+
   Future<void> _carregarAmigos() async {
     setState(() {
       _carregando = true;
@@ -66,14 +76,18 @@ class _AmigosScreenState extends State<AmigosScreen>
       if (mounted) {
         setState(() {
           if (resAmigos['sucesso'] == true && resAmigos['amigos'] is List) {
-            _meusAmigos = List<Map<String, dynamic>>.from(
-              (resAmigos['amigos'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+            _meusAmigos = _ordenarPorNome(
+              List<Map<String, dynamic>>.from(
+                (resAmigos['amigos'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+              ),
             );
           }
 
           if (resPendentes['sucesso'] == true && resPendentes['solicitacoes'] is List) {
-            _solicitacoesPendentes = List<Map<String, dynamic>>.from(
-              (resPendentes['solicitacoes'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+            _solicitacoesPendentes = _ordenarPorNome(
+              List<Map<String, dynamic>>.from(
+                (resPendentes['solicitacoes'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+              ),
             );
           }
 
@@ -118,8 +132,10 @@ class _AmigosScreenState extends State<AmigosScreen>
         setState(() {
           _buscando = false;
           if (res['sucesso'] == true && res['usuarios'] is List) {
-            _resultadosBusca = List<Map<String, dynamic>>.from(
-              (res['usuarios'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+            _resultadosBusca = _ordenarPorNome(
+              List<Map<String, dynamic>>.from(
+                (res['usuarios'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+              ),
             );
           } else {
             _resultadosBusca = [];
@@ -520,6 +536,12 @@ class _AmigosScreenState extends State<AmigosScreen>
     );
   }
 
+  String _formatarNomeCurto(String nomeCompleto) {
+    final partes = nomeCompleto.trim().split(RegExp(r'\s+'));
+    if (partes.isEmpty || partes.first.isEmpty) return 'Amigo';
+    return partes.take(2).join(' ');
+  }
+
   Widget _buildAbaMeusAmigos() {
     if (_meusAmigos.isEmpty) {
       return Center(
@@ -574,6 +596,7 @@ class _AmigosScreenState extends State<AmigosScreen>
         itemBuilder: (context, index) {
           final amigo = _meusAmigos[index];
           final nome = amigo['nome']?.toString() ?? 'Amigo';
+          final nomeExibicao = _formatarNomeCurto(nome);
           final letraAvatar = nome.isNotEmpty ? nome[0].toUpperCase() : 'A';
           final sequencia = (amigo['sequencia'] as num?)?.toInt() ?? 0;
           final pontos = (amigo['pontos'] as num?)?.toInt() ?? 0;
@@ -607,7 +630,9 @@ class _AmigosScreenState extends State<AmigosScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        nome,
+                        nomeExibicao,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -619,21 +644,25 @@ class _AmigosScreenState extends State<AmigosScreen>
                         children: [
                           const Icon(Icons.bolt, size: 14, color: Colors.amberAccent),
                           const SizedBox(width: 2),
-                          Text(
-                            '$sequencia dias',
-                            style: const TextStyle(
-                              color: Colors.white60,
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              '$sequencia dias',
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),
                           const Icon(Icons.star, size: 14, color: Color(0xFF00E676)),
                           const SizedBox(width: 2),
-                          Text(
-                            '$pontos pts',
-                            style: const TextStyle(
-                              color: Colors.white60,
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              '$pontos pts',
+                              style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
@@ -641,16 +670,18 @@ class _AmigosScreenState extends State<AmigosScreen>
                     ],
                   ),
                 ),
-                ElevatedButton.icon(
+                IconButton(
                   onPressed: () => _iniciarTreinoComAmigo(amigoId, nome),
-                  icon: const Icon(Icons.fitness_center, size: 15),
-                  label: const Text('Dupla'),
-                  style: ElevatedButton.styleFrom(
+                  icon: const Icon(Icons.fitness_center, size: 18),
+                  tooltip: 'Treino em Dupla',
+                  style: IconButton.styleFrom(
                     backgroundColor: const Color(0xFF00E676),
                     foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.all(8),
+                    minimumSize: const Size(36, 36),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -750,13 +781,17 @@ class _AmigosScreenState extends State<AmigosScreen>
                           Row(
                             children: [
                               const Icon(Icons.bolt, size: 13, color: Colors.amberAccent),
-                              Text(
-                                '$sequencia dias • ',
-                                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                              Flexible(
+                                child: Text(
+                                  '$sequencia dias • ',
+                                  style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                ),
                               ),
-                              Text(
-                                '$pontos pts',
-                                style: const TextStyle(color: Color(0xFF00E676), fontSize: 11),
+                              Flexible(
+                                child: Text(
+                                  '$pontos pts',
+                                  style: const TextStyle(color: Color(0xFF00E676), fontSize: 11),
+                                ),
                               ),
                             ],
                           ),
@@ -919,7 +954,6 @@ class _AmigosScreenState extends State<AmigosScreen>
                                             Flexible(
                                               child: Text(
                                                 '${user['sequencia'] ?? 0} dias streak',
-                                                overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(color: Colors.white70, fontSize: 11),
                                               ),
                                             ),
@@ -929,7 +963,6 @@ class _AmigosScreenState extends State<AmigosScreen>
                                             Flexible(
                                               child: Text(
                                                 '${user['pontuacao_semanal'] ?? user['pontos'] ?? 0} pts',
-                                                overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(
                                                   color: Color(0xFF00E676),
                                                   fontSize: 11,

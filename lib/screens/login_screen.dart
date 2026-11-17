@@ -16,6 +16,31 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
   bool _carregando = false;
+  String _mensagemStatus = 'Iniciando servidor e autenticando...';
+
+  @override
+  void initState() {
+    super.initState();
+    _verificarAutoLogin();
+  }
+
+  Future<void> _verificarAutoLogin() async {
+    final credenciais = await ApiService().obterCredenciaisSalvas();
+    if (!mounted || credenciais == null) return;
+
+    final emailSalvo = credenciais['email'] ?? '';
+    final senhaSalva = credenciais['senha'] ?? '';
+    if (emailSalvo.isEmpty || senhaSalva.isEmpty) return;
+
+    setState(() {
+      _emailController.text = emailSalvo;
+      _senhaController.text = senhaSalva;
+      _carregando = true;
+      _mensagemStatus = 'Iniciando servidor e autenticando...';
+    });
+
+    await _executarLogin();
+  }
 
   @override
   void dispose() {
@@ -40,12 +65,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {
       _carregando = true;
+      _mensagemStatus = 'Conectando ao servidor e autenticando...';
     });
 
     final resposta = await ApiService().fazerLogin(
       email: email,
       senha: senha,
       forcarLogin: forcarLogin,
+      onStatus: (msg) {
+        if (mounted) {
+          setState(() {
+            _mensagemStatus = msg;
+          });
+        }
+      },
     );
 
     if (!mounted) return;
@@ -196,12 +229,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ElevatedButton(
                       onPressed: _carregando ? null : () => _executarLogin(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF030712), // Preto / quase preto
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF00E676),
+                        foregroundColor: const Color(0xFF0D1117),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          side: const BorderSide(color: Colors.white24),
                         ),
                         elevation: 0,
                       ),
@@ -211,18 +243,31 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: Color(0xFF0D1117),
                               ),
                             )
                           : const Text(
                               'Continuar',
                               style: TextStyle(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
                               ),
                             ),
                     ),
+
+                    if (_carregando) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        _mensagemStatus,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF00E676),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: 14),
 
@@ -241,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text(
                           'Esqueceu a senha?',
                           style: TextStyle(
-                            color: Color(0xFFE91E63), // Rosa vibrante
+                            color: Color(0xFF00E676),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -255,28 +300,32 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          'Não possui uma conta? ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
+                        const Flexible(
+                          child: Text(
+                            'Não possui uma conta? ',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CadastroScreen(),
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CadastroScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Crie uma conta',
+                              style: TextStyle(
+                                color: Color(0xFF00E676),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
-                            );
-                          },
-                          child: const Text(
-                            'Crie uma conta',
-                            style: TextStyle(
-                              color: Color(0xFFE91E63), // Rosa vibrante
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
                             ),
                           ),
                         ),
@@ -292,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Widget auxiliar para os campos de texto brancos
+  // Widget auxiliar para os campos de texto em cinza carbono
   Widget _buildInputField({
     required TextEditingController controller,
     required String hintText,
@@ -307,16 +356,24 @@ class _LoginScreenState extends State<LoginScreen> {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       onSubmitted: onSubmitted,
-      style: const TextStyle(color: Colors.black87),
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+        hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: const Color(0xFF1E232A),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: Color(0xFF00E676), width: 1.5),
         ),
       ),
     );
