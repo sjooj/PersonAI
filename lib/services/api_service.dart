@@ -756,6 +756,27 @@ class ApiService {
   // 5. PONTUAÇÕES / GAMIFICAÇÃO
   // ============================================================
 
+  Future<Map<String, dynamic>> zerarPontuacaoDiaria(String usuarioId) async{
+    try{
+      final url = Uri.parse('$baseUrl/pontuacao/$usuarioId/zerar-diaria');
+      final response = await http
+          .post(url, headers: _headers)
+          .timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+
+      if (data['sucesso'] == true && usuarioLogado != null){
+        usuarioLogado!['pontuacao_diaria'] = 0;
+      }
+      return data;
+    } catch (e) {
+      return {
+        'sucesso': false,
+        'mensagem': 'Erro ao zerar pontuacao diaria: $e',
+      };
+    }
+    }
+
   int get pontuacaoDiariaAtual {
     if (usuarioLogado != null && usuarioLogado!['pontuacao_diaria'] != null) {
       return (usuarioLogado!['pontuacao_diaria'] as num).toInt();

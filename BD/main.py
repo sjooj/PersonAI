@@ -1269,6 +1269,29 @@ def excluir_treino(treino_id: Union[int, str], token: Optional[str] = None) -> D
 # 5. PONTUAÇÕES / GAMIFICAÇÃO
 # ============================================================
 
+def zerar_pontuacao_diaria(usuario_id: str, token: Optional[str] = None) -> Dict[str, Any]:
+    if not usuario_id or not str(usuario_id).strip():
+        return {"sucesso": False, "mensagem": "ID do usuario eh obrigatorio"}
+
+    try:
+        cliente_bd = _obter_cliente_db(token=token)
+
+        res = (
+            cliente_bd
+            .table("usuarios")
+            .update("pontuacao_diaria", 0)
+            .eq("id", usuario_id)
+            .execute()
+        )
+
+        if not res.data:
+            return {"sucesso": False, "mensagem": "Usuario nao encontrado ou sem permissao"}
+        return {"sucesso": True, "mensagem": "Pontuacao diaria zerada"}
+
+    except Exception as e:
+        return {"sucesso": False, "mensagem": str(e)}
+
+
 def ver_pontuacao(usuario_id: str, token: Optional[str] = None) -> Dict[str, Any]:
     """
     Consulta e retorna a pontuação diária, semanal e total, além da sequência,

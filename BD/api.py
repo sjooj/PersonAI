@@ -414,6 +414,10 @@ def api_excluir_treino(treino_id: str, authorization: Optional[str] = Header(Non
 # ============================================================
 # ROTAS - 5. PONTUAÇÕES / GAMIFICAÇÃO
 # ============================================================
+@app.post("/pontuacao/{usuario_id}/zerar-pontuacao")
+def api_zerar_diaria(usuario_id: str, authorization: Optional[str] = Header(None)):
+    token = _extrair_token_bearer(authorization)
+    return bd.zerar_pontuacao_diaria(usuario_id, token)
 
 @app.get("/pontuacao/{usuario_id}")
 def api_ver_pontuacao(usuario_id: str, authorization: Optional[str] = Header(None)):

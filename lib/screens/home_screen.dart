@@ -433,6 +433,46 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+
+            SizedBox (
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final uid = await ApiService().idUsuarioAtual;
+                    if (uid == null) return;
+                    final res = await ApiService().zerarPontuacaoDiaria(uid);
+                    if (!mounted) return;
+
+                    if (res["sucesso"] == true) {
+                      _carregarPontuacoes();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Pontuação diária zerada!')),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              res['mensagem']?.toString() ?? 'Erro ao zerar'),
+                        ),
+                      );
+                    }
+                  },
+
+                  icon: const Icon(Icons.arrow_circle_up_outlined),
+                  label: const Text('Zerar Pontuação Diária'),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E232A),
+                      foregroundColor: const Color(0xFF00E676),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.white12),
+                      ),
+                  ),
+              ),
+            )
+
           ],
         ),
       ),
