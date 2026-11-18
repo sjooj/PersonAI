@@ -1279,7 +1279,7 @@ def zerar_pontuacao_diaria(usuario_id: str, token: Optional[str] = None) -> Dict
         res = (
             cliente_bd
             .table("usuarios")
-            .update("pontuacao_diaria", 0)
+            .update({"pontuacao_diaria": 0})
             .eq("id", usuario_id)
             .execute()
         )
