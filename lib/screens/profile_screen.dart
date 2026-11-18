@@ -29,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int pontosHoje = 0;
   int pontosSemana = 0;
   int diasSequencia = 0;
+  int totalTreinos = 0;
 
   @override
   void initState() {
@@ -43,6 +44,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final usuarioId = ApiService().idUsuarioAtual;
     if (usuarioId != null) {
       final res = await ApiService().verPerfil(usuarioId);
+      final resTreinos = await ApiService().qtdTreinos(usuarioId);
+
       if (mounted && res['sucesso'] == true && res['perfil'] != null) {
         final perfil = res['perfil'] as Map<String, dynamic>;
         setState(() {
@@ -56,6 +59,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           pontosHoje = (perfil['pontuacao_diaria'] as num?)?.toInt() ?? 0;
           pontosSemana = (perfil['pontuacao_semanal'] as num?)?.toInt() ?? 0;
           diasSequencia = (perfil['sequencia'] as num?)?.toInt() ?? ApiService().sequenciaAtual;
+          if (resTreinos["sucesso"] == true) {
+            totalTreinos = (resTreinos["qtdTreinos"] as num?)?.toInt() ?? 0;
+          }
         });
       }
     } else {
@@ -237,6 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildStatRow('Hoje', '$pontosHoje pts'),
                     _buildStatRow('Semana', '$pontosSemana pts'),
                     _buildStatRow('Sequência', '$diasSequencia ${diasSequencia == 1 ? "dia" : "dias"}'),
+                    _buildStatRow('Treinos criados', '$totalTreinos'),
                   ],
                 ),
               ),

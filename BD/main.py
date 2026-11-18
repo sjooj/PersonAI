@@ -989,6 +989,30 @@ def ver_treinos_premont() -> Dict[str, Any]:
     except Exception as erro:
         return {"sucesso": False, "mensagem": str(erro), "treinos": []}
 
+def contar_treinos(usuario_id:str, token: Optional[str] = None) -> Dict[str,Any]:
+    if not usuario_id or not str(usuario_id).strip():
+        return {"sucesso": False, "mensagem": "ID do usuário é obrigatório", "treinos":[]}
+    usuario_id = str(usuario_id).strip()
+
+    try:
+        cliente_bd = _obter_cliente_db(usuario_id=usuario_id, token=token)
+
+        res = (
+        cliente_bd
+        .table("treinos")
+        .select("id")
+        .eq("usuario_id", usuario_id)
+        .eq("pre_montado", False)
+        .execute()
+        )
+
+        if res.data:
+            qtd = len(res.data)
+        else:
+            qtd = []
+        return {"sucesso": True, "qtdTreinos": qtd}
+    except Exception as error:
+        return {"sucesso": False, "mensagem": str(error)}
 
 def listar_treinos(usuario_id: str, token: Optional[str] = None) -> Dict[str, Any]:
     """

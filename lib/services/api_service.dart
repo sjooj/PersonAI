@@ -589,7 +589,23 @@ class ApiService {
       return {
         'sucesso': false,
         'mensagem': 'Erro ao buscar treinos pré-montados: $e',
-        'treinos': [],
+        'treinos': []
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> qtdTreinos(String usuarioID) async {
+    try {
+      final url = Uri.parse('$baseUrl/treinos/contar_treinos');
+      final response = await http
+          .get(url, headers:_headers)
+      .timeout(const Duration(seconds:10));
+
+      return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    } catch(e) {
+      return{
+        'sucesso': false,
+        'mensagem': 'Erro ao contar treinos: $e'
       };
     }
   }
