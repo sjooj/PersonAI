@@ -352,6 +352,12 @@ def api_listar_treinos_usuario(usuario_id: str, authorization: Optional[str] = H
     resposta = bd.listar_treinos(usuario_id)
     return resposta
 
+@app.get("/treinos/contar_treinos")
+def api_contar_treinos(usuario_id: str, authorization: Optional[str] = Header(None)):
+    token = _extrair_token_bearer(authorizarion)
+    if token:
+        return bd.contar_treinos(usuario_id=usuario_id, token=token)
+
 @app.post("/treinos")
 def api_criar_treino(req: CriarTreinoRequest, authorization: Optional[str] = Header(None)):
     token = _extrair_token_bearer(authorization)
